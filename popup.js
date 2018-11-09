@@ -49,24 +49,28 @@ function jumpToLink(url) {
 function incrementAndGrab() {
   chrome.tabs.getSelected(null,function(tab) {
     currentTab = tab
-    const repoLink = tab.url;
-    const repoName = repoLink.substr(repoLink.lastIndexOf("/")+1)
-
-    if ( storedRepos === [] || storedRepos.reduce( (acc, c,i, a) => {
+    if (tab.url.includes("github.com")) {
+      const repoLink = tab.url.split("/").slice(0, 5).join('/')
+      const repoName = repoLink.substr(repoLink.lastIndexOf("/")+1)
+      
+      if ( storedRepos === [] || storedRepos.reduce( (acc, c,i, a) => {
         console.log(c.name, repoName)
         return acc || c.name === repoName
-    }, false) === false) {
-      storedRepos.push({'name': repoName, 'url': repoLink});
-      chrome.storage.sync.set({storedRepos: storedRepos});
-      console.log(storedRepos)
-      alertModal.style.display = 'block';
+      }, false) === false) {
+        storedRepos.push({'name': repoName, 'url': repoLink});
+        chrome.storage.sync.set({storedRepos: storedRepos});
+        console.log(storedRepos)
+        //alertModal.style.display = 'block';
+      }
+      setTimeout(displayRepoLinks, 300);
+      
     }
-    displayRepoLinks();
   });
 }
 function clear() {
-  chrome.storage.sync.set({storedRepos: []});
-  displayRepoLinks();
+  storedRepos = [];
+  chrome.storage.sync.set({storedRepos: storedRepos});
+  setTimeout(displayRepoLinks, 300);
 }
 function undoAction() {
   storedRepos.pop();
